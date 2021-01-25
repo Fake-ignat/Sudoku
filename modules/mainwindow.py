@@ -25,4 +25,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         menuBar = self.menuBar()
         toolBar = QtWidgets.QToolBar()
+        myMenuFile = menuBar.addMenu("&Файл")
+        action = myMenuFile.addAction(QtGui.QIcon(r'images/new.png'),
+                                      "&Новый", self.sudoku.onClearAllCells,
+                                      QtCore.Qt.CTRL + QtCore.Qt.Key_N)
+        toolBar.addAction(action)
+        toolBar.addSeparator()
+        action = myMenuFile.addAction("&Выход", QtWidgets.qApp.quit,
+                                      QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
+        action.setStatusTip("Завершение работы приложения")
+
         # page 769
