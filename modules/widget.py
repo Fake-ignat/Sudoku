@@ -114,6 +114,11 @@ class Widget(QtWidgets.QWidget):
             self.cells[self.idCellInFocus].setNewText("")
         QtWidgets.QWidget.keyPressEvent(self, evt)
 
+    for x in range(10):
+        ex_string = f'    def onBtn{x}Clicked(self): self.cells[self.idCellInFocus].setNewText("{x}")'
+        exec(ex_string)
+
+    """
     def onBtn0Clicked(self):
         self.cells[self.idCellInFocus].setNewText("1")
 
@@ -140,6 +145,7 @@ class Widget(QtWidgets.QWidget):
 
     def onBtn8Clicked(self):
         self.cells[self.idCellInFocus].setNewText("9")
+    """
 
     def onBtnXClicked(self):
         self.cells[self.idCellInFocus].setNewText("")
@@ -172,3 +178,4 @@ class Widget(QtWidgets.QWidget):
         for cell in self.cells:
             if not cell.isCellChange:
                 cell.clearCellBlock()
+    
