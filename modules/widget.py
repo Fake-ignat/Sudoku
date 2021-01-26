@@ -44,7 +44,7 @@ class Widget(QtWidgets.QWidget):
         hbox = QtWidgets.QHBoxLayout()
         hbox.setSpacing(1)
 
-        btns = self.createButtons(10)
+        btns = self.createButtons(9)
         for btn in btns:
             hbox.addWidget(btn)
 
@@ -114,8 +114,8 @@ class Widget(QtWidgets.QWidget):
             self.cells[self.idCellInFocus].setNewText("")
         QtWidgets.QWidget.keyPressEvent(self, evt)
 
-    for x in range(10):
-        ex_string = f'    def onBtn{x}Clicked(self): self.cells[self.idCellInFocus].setNewText("{x}")'
+    for x in range(9):
+        ex_string = f'def onBtn{x}Clicked(self): self.cells[self.idCellInFocus].setNewText("{x}")'
         exec(ex_string)
 
     """
@@ -157,7 +157,7 @@ class Widget(QtWidgets.QWidget):
 
     def onBlockCell(self):
         cell = self.cells[self.idCellInFocus]
-        if cell.text():
+        if not cell.text():
             QtWidgets.QMessageBox.information(self, "Судоку",
                                               "Нельзя блокировать пустую ячейку")
         else:

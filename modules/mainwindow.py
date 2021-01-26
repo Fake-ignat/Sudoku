@@ -25,14 +25,114 @@ class MainWindow(QtWidgets.QMainWindow):
 
         menuBar = self.menuBar()
         toolBar = QtWidgets.QToolBar()
-        myMenuFile = menuBar.addMenu("&Файл")
-        action = myMenuFile.addAction(QtGui.QIcon(r'images/new.png'),
-                                      "&Новый", self.sudoku.onClearAllCells,
-                                      QtCore.Qt.CTRL + QtCore.Qt.Key_N)
-        toolBar.addAction(action)
-        toolBar.addSeparator()
-        action = myMenuFile.addAction("&Выход", QtWidgets.qApp.quit,
-                                      QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
-        action.setStatusTip("Завершение работы приложения")
 
-        # page 769
+        menu_actions = {
+            "new": [
+                "&Новый",
+                self.sudoku.onClearAllCells,
+                QtCore.Qt.CTRL + QtCore.Qt.Key_N,
+                "Создание новой, пустой головоломки",
+                QtGui.QIcon('..\\images\\new.png')
+            ],
+            "exit": [
+                "&Выход",
+                QtWidgets.qApp.quit,
+                QtCore.Qt.CTRL + QtCore.Qt.Key_Q,
+                "Завершение работы приложения"
+            ],
+            "lock": [
+                "&Блокировать",
+                self.sudoku.onBlockCell,
+                QtCore.Qt.Key_F2,
+                "Блокирование активной ячейки"
+            ],
+            "lock_all": [
+                "Б&локировать все",
+                self.sudoku.onBlockCells,
+                QtCore.Qt.Key_F3,
+                "Блокирование всех ячеек",
+                QtGui.QIcon('..\\images\\lock.png')
+            ],
+            "unlock": [
+                "&Разблокировать",
+                self.sudoku.onClearBlockCell,
+                QtCore.Qt.Key_F4,
+                "Разблокирование активной ячейки"
+            ],
+            "unlock_all": [
+                "Р&азблокировать все",
+                self.sudoku.onClearBlockCells,
+                QtCore.Qt.Key_F5,
+                "Разблокирование всех ячеек",
+                QtGui.QIcon('..\\images\\unlock.png')
+            ],
+            "about_program": [
+                "О &программе...",
+                self.aboutInfo,
+                None,
+                "Получение сведений о приложении",
+            ],
+            "about_Qt": [
+                "О &Qt...",
+                QtWidgets.qApp.aboutQt,
+                None,
+                "Получение сведений о библиотеке Qt",
+            ]
+        }
+
+        myMenuFile = menuBar.addMenu("&Файл")
+        action = add_menu_action(myMenuFile, *menu_actions["new"])
+        toolBar.addAction(action)
+
+        myMenuFile.addSeparator()
+        toolBar.addSeparator()
+
+        add_menu_action(myMenuFile, *menu_actions["exit"])
+
+        myMenuEdit = menuBar.addMenu("&Правка")
+
+        add_menu_action(myMenuEdit, *menu_actions["lock"])
+        action = add_menu_action(myMenuEdit, *menu_actions["lock_all"])
+        toolBar.addAction(action)
+
+        add_menu_action(myMenuEdit, *menu_actions["unlock"])
+        action = add_menu_action(myMenuEdit, *menu_actions["unlock_all"])
+        toolBar.addAction(action)
+
+        myMenuAbout = menuBar.addMenu("&Справка")
+        add_menu_action(myMenuAbout, *menu_actions["about_program"])
+        add_menu_action(myMenuAbout, *menu_actions["about_Qt"])
+
+        toolBar.setMovable(False)
+        toolBar.setFloatable(False)
+        self.addToolBar(toolBar)
+
+        statusBar = self.statusBar()
+        statusBar.setSizeGripEnabled(False)
+        statusBar.showMessage("\"Судоку\" приветствует вас", 20000)
+
+        if self.settings.contains("X") and self.settings.contains("Y"):
+            self.move(self.settings.value("X"), self.settings.value("Y"))
+
+    def closeEvent(self, event):
+        g = self.geometry()
+        self.settings.setValue("X", g.left())
+        self.settings.setValue("Y", g.top())
+
+    def aboutInfo(self):
+        QtWidgets.QMessageBox.about(self, "О программе",
+                                    "<center>\"Судоку\" v2.0.0<br><br>"
+                                    "Программа для просмотра и редактирования судоку<br><br>")
+
+
+def add_menu_action(menu_item, title, listener, key, status_tip, icon=None):
+    if icon:
+        action = menu_item.addAction(icon, title, listener, key)
+    else:
+        if key:
+            action = menu_item.addAction(title, listener, key)
+        else:
+            action = menu_item.addAction(title, listener)
+
+    action.setStatusTip(status_tip)
+    return action
