@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
+import re
 from modules.widget import Widget
 
 qpushbutton_style = 'font-size:10pt; font-family:Verdana; color:black;font-weight:bold;'
@@ -77,6 +78,38 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.qApp.aboutQt,
                 None,
                 "Получение сведений о библиотеке Qt",
+            ],
+            "copy": [
+                "К&опировать",
+                self.onCopyData,
+                QtCore.Qt.CTRL + QtCore.Qt.Key_C,
+                "Копирование головоломки в буфер обмена",
+                QtGui.QIcon('..\\images\\copy.png')
+            ],
+            "compact_copy": [
+                "&Копировать компактно",
+                self.onCopyDataMini,
+                None,
+                "Копирование в компактном формате"
+            ],
+            "copy_excel": [
+                "Копировать &для Excel",
+                self.onCopyDataExcel,
+                None,
+                "Копирование в формате MS Excel"
+            ],
+            "paste": [
+                "&Вставить",
+                self.onPasteData,
+                QtCore.Qt.CTRL + QtCore.Qt.Key_V,
+                "Вставка головоломки из буфера обмена",
+                QtGui.QIcon('..\\images\\paste.png')
+            ],
+            "paste_excel": [
+                "Вставить &из Excel",
+                self.onPasteDataExcel,
+                None,
+                "Вставка головоломки из MS Excel"
             ]
         }
 
@@ -90,6 +123,17 @@ class MainWindow(QtWidgets.QMainWindow):
         add_menu_action(myMenuFile, *menu_actions["exit"])
 
         myMenuEdit = menuBar.addMenu("&Правка")
+
+        action = add_menu_action(myMenuEdit, *menu_actions["copy"])
+        toolBar.addAction(action)
+        add_menu_action(myMenuEdit, *menu_actions["compact_copy"])
+        add_menu_action(myMenuEdit, *menu_actions["copy_excel"])
+        action = add_menu_action(myMenuEdit, *menu_actions["paste"])
+        toolBar.addAction(action)
+        add_menu_action(myMenuEdit, *menu_actions["paste_excel"])
+
+        myMenuEdit.addSeparator()
+        toolBar.addSeparator()
 
         add_menu_action(myMenuEdit, *menu_actions["lock"])
         action = add_menu_action(myMenuEdit, *menu_actions["lock_all"])
@@ -124,6 +168,52 @@ class MainWindow(QtWidgets.QMainWindow):
                                     "<center>\"Судоку\" v2.0.0<br><br>"
                                     "Программа для просмотра и редактирования судоку<br><br>")
 
+    def onCopyData(self):
+        pass
+
+    def onCopyDataMini(self):
+        pass
+
+    def onCopyDataExcel(self):
+        data = QtWidgets.QApplication.clipboard().text()
+        print(data)
+        if data:
+            data = data.replace('\r', '')
+            r = re.compile(r'([0-9]?[\t\n]) {81}')
+            if r.match(data):
+                result = []
+                if data[-1] == '\n':
+                    data = data[:-1]
+                dl = data.split('\n')
+                for sl in dl:
+                    dli = sl.split('\t')
+                    for sli in dli:
+                        if len(sli) == 0:
+                            result.append('00')
+                        else:
+                            result.append('0' + sli[0])
+                    data = ''.join(result)
+                    self.sudoku.setDataAllCells(data)
+                    return
+        self.dataErrorMsg()
+
+    def onPasteData(self):
+        data = QtWidgets.QApplication.clipboard().text()
+        print(data)
+        if data:
+            if len(data) in (81, 162):
+                r = re.compile(r'[^0-9]')
+                if not r.match(data):
+                    self.sudoku.setDataAllCells(data)
+                    return
+        self.dataErrorMsg()
+
+    def onPasteDataExcel(self):
+        pass
+
+    def dataErrorMsg(self):
+        QtWidgets.QMessageBox.information(self, 'Судоку',
+                                          'Данные имеют неправильный формат')
 
 def add_menu_action(menu_item, title, listener, key, status_tip, icon=None):
     if icon:

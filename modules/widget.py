@@ -48,15 +48,15 @@ class Widget(QtWidgets.QWidget):
         for btn in btns:
             hbox.addWidget(btn)
 
-        btns[0].clicked.connect(self.onBtn0Clicked)
-        btns[1].clicked.connect(self.onBtn1Clicked)
-        btns[2].clicked.connect(self.onBtn2Clicked)
-        btns[3].clicked.connect(self.onBtn3Clicked)
-        btns[4].clicked.connect(self.onBtn4Clicked)
-        btns[5].clicked.connect(self.onBtn5Clicked)
-        btns[6].clicked.connect(self.onBtn6Clicked)
-        btns[7].clicked.connect(self.onBtn7Clicked)
-        btns[8].clicked.connect(self.onBtn8Clicked)
+        btns[0].clicked.connect(self.onBtn1Clicked)
+        btns[1].clicked.connect(self.onBtn2Clicked)
+        btns[2].clicked.connect(self.onBtn3Clicked)
+        btns[3].clicked.connect(self.onBtn4Clicked)
+        btns[4].clicked.connect(self.onBtn5Clicked)
+        btns[5].clicked.connect(self.onBtn6Clicked)
+        btns[6].clicked.connect(self.onBtn7Clicked)
+        btns[7].clicked.connect(self.onBtn8Clicked)
+        btns[8].clicked.connect(self.onBtn9Clicked)
         btns[9].clicked.connect(self.onBtnXClicked)
 
         frame2.setLayout(hbox)
@@ -79,7 +79,7 @@ class Widget(QtWidgets.QWidget):
     def createButtons(self, amount):
         btns = []
         for i in range(amount):
-            btn = QtWidgets.QPushButton(str(i))
+            btn = QtWidgets.QPushButton(str(i+1))
             btn.setFixedSize(27, 27)
             btn.setFocusPolicy(QtCore.Qt.NoFocus)
             btns.append(btn)
@@ -114,7 +114,7 @@ class Widget(QtWidgets.QWidget):
             self.cells[self.idCellInFocus].setNewText("")
         QtWidgets.QWidget.keyPressEvent(self, evt)
 
-    for x in range(9):
+    for x in range(1, 10):
         ex_string = f'def onBtn{x}Clicked(self): self.cells[self.idCellInFocus].setNewText("{x}")'
         exec(ex_string)
 
@@ -178,4 +178,51 @@ class Widget(QtWidgets.QWidget):
         for cell in self.cells:
             if not cell.isCellChange:
                 cell.clearCellBlock()
-    
+
+    def getDataAllCells(self):
+        listAllData = []
+        for cell in self.cells:
+            listAllData.append('0' if cell.isCellChange else '1')
+            s = cell.text()
+            listAllData.append(s if len(s) == 1 else '0')
+            return ''.join(listAllData)
+
+    def getDataAllCellsMini(self):
+        listAllData = []
+        for cell in self.cells:
+            s = cell.text()
+            listAllData.append(s if len(s) == 1 else '0')
+            return ''.join(listAllData)
+
+    def getDataAllCellExcel(self):
+        numbers = (9, 18, 27, 36, 45, 54, 63, 72)
+        listAllData = [self.cells[0].text()]
+        for i in range(1, 81):
+            listAllData.append('\r\n' if i in numbers else '\t')
+            listAllData.append(self.cells[i].text())
+        listAllData.append('\r\n')
+        return ''.join(listAllData)
+
+    def setDataAllCells(self, data):
+        size = len(data)
+        if size == 81:
+            for i in range(81):
+                if data[i] == '0':
+                    self.cells[i].setText('')
+                    self.cells[i].clearCellBlock()
+                else:
+                    self.cells[i].setText(data[i])
+                    self.cells[i].setCellBlock()
+            self.onChangeCellFocus(0)
+        elif size == 162:
+            for i in range(0, 162, 2):
+                id = i // 2
+                if data[i] == '0':
+                    self.cells[id].clearCellBlock()
+                else:
+                    self.cells[id].setCellBlock()
+                self.cells[id].setText('' if data[i + 1] == '0' else data[i+1])
+            self.onChangeCellFocus(0)
+
+
+
