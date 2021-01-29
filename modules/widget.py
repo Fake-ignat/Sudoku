@@ -185,14 +185,14 @@ class Widget(QtWidgets.QWidget):
             listAllData.append('0' if cell.isCellChange else '1')
             s = cell.text()
             listAllData.append(s if len(s) == 1 else '0')
-            return ''.join(listAllData)
+        return ''.join(listAllData)
 
     def getDataAllCellsMini(self):
         listAllData = []
         for cell in self.cells:
             s = cell.text()
             listAllData.append(s if len(s) == 1 else '0')
-            return ''.join(listAllData)
+        return ''.join(listAllData)
 
     def getDataAllCellExcel(self):
         numbers = (9, 18, 27, 36, 45, 54, 63, 72)

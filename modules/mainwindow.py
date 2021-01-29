@@ -110,12 +110,40 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.onPasteDataExcel,
                 None,
                 "Вставка головоломки из MS Excel"
+            ],
+            "open": [
+                "&Открыть...",
+                self.onOpenFile,
+                QtCore.Qt.CTRL + QtCore.Qt.Key_O,
+                "Загрузка головоломки из файла",
+                QtGui.QIcon('..\\images\\open.png')
+            ],
+            "save": [
+                "Со&хранить...",
+                self.onSave,
+                QtCore.Qt.CTRL + QtCore.Qt.Key_S,
+                "Сохранение головоломки в файле",
+                QtGui.QIcon('..\\images\\save.png')
+            ],
+            "save_mini": [
+                "&Сохранить компактно...",
+                self.onSave,
+                None,
+                "Сохранение головоломки в компактном формате"
             ]
         }
 
         myMenuFile = menuBar.addMenu("&Файл")
         action = add_menu_action(myMenuFile, *menu_actions["new"])
         toolBar.addAction(action)
+
+        action = add_menu_action(myMenuFile, *menu_actions["open"])
+        toolBar.addAction(action)
+
+        action = add_menu_action(myMenuFile, *menu_actions["save"])
+        toolBar.addAction(action)
+
+        add_menu_action(myMenuFile, *menu_actions["save_mini"])
 
         myMenuFile.addSeparator()
         toolBar.addSeparator()
@@ -169,39 +197,21 @@ class MainWindow(QtWidgets.QMainWindow):
                                     "Программа для просмотра и редактирования судоку<br><br>")
 
     def onCopyData(self):
-        pass
+        state = self.sudoku.getDataAllCells()
+        QtWidgets.QApplication.clipboard().setText(state)
 
     def onCopyDataMini(self):
-        pass
+        state = self.sudoku.getDataAllCellsMini()
+        QtWidgets.QApplication.clipboard().setText(state)
 
     def onCopyDataExcel(self):
-        data = QtWidgets.QApplication.clipboard().text()
-        print(data)
-        if data:
-            data = data.replace('\r', '')
-            r = re.compile(r'([0-9]?[\t\n]) {81}')
-            if r.match(data):
-                result = []
-                if data[-1] == '\n':
-                    data = data[:-1]
-                dl = data.split('\n')
-                for sl in dl:
-                    dli = sl.split('\t')
-                    for sli in dli:
-                        if len(sli) == 0:
-                            result.append('00')
-                        else:
-                            result.append('0' + sli[0])
-                    data = ''.join(result)
-                    self.sudoku.setDataAllCells(data)
-                    return
-        self.dataErrorMsg()
+        state = self.sudoku.getDataAllCellExcel()
+        QtWidgets.QApplication.clipboard().setText(state)
 
     def onPasteData(self):
         data = QtWidgets.QApplication.clipboard().text()
-        print(data)
         if data:
-            if len(data) in (81, 162):
+            if len(data) == 81 or len(data) == 162:
                 r = re.compile(r'[^0-9]')
                 if not r.match(data):
                     self.sudoku.setDataAllCells(data)
@@ -209,11 +219,72 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dataErrorMsg()
 
     def onPasteDataExcel(self):
-        pass
+        data = QtWidgets.QApplication.clipboard().text()
+        if data:
+            data = data.replace('\r', '')
+            r = re.compile(r'([0-9]?[\t\n]){81}')
+            if r.match(data):
+                result = []
+                if data[-1] == '\n':
+                    data = data[:-1]
+                lines = data.split('\n')
+                for line in lines:
+                    cells_state = line.split('\t')
+                    for cell_state in cells_state:
+                        if len(cell_state) == 0:
+                            result.append('00')
+                        else:
+                            result.append('0' + cell_state[0])
+                data = ''.join(result)
+                self.sudoku.setDataAllCells(data)
+                return
+        self.dataErrorMsg()
 
     def dataErrorMsg(self):
         QtWidgets.QMessageBox.information(self, 'Судоку',
                                           'Данные имеют неправильный формат')
+
+    def onOpenFile(self):
+        filename = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Выберите файл", QtCore.QDir.homePath(), "Судоку (*.svd)"
+        )[0]
+        if filename:
+            data = ''
+            try:
+                with open(filename, newline='') as f:
+                    data = f.read()
+            except:
+                QtWidgets.QMessageBox.information(self, "Судоку",
+                                                  "Не удалось открыть файл")
+                return
+            if len(data) > 2:
+                if data[-1] == '\n':
+                    data = data[:-1]
+                if len(data) in (81, 162):
+                    r = re.compile(r'[^0-9]')
+                    if not  r.match(data):
+                        self.sudoku.setDataAllCells(data)
+                        return
+            self.dataErrorMsg()
+
+    def onSave(self):
+        self.saveSVDFile(self.sudoku.getDataAllCells())
+
+    def onSaveMini(self):
+        self.saveSVDFile(self.sudoku.getDataAllCellsMini())
+
+    def saveSVDFile(self, data):
+        filename = QtWidgets.QFileDialog.getSaveFileName(
+            self, "Выберите файл", QtCore.QDir.homePath(), "Судоку (*.svd)"
+        )[0]
+        if filename:
+            try:
+                with open(filename, mode='w', newline='') as f:
+                     f.write(data)
+                self.statusBar().showMessage("Файл сохранен", 10000)
+            except:
+                QtWidgets.QMessageBox.information(self, "Судоку",
+                                                  "Не удалось сохранить файл")
 
 def add_menu_action(menu_item, title, listener, key, status_tip, icon=None):
     if icon:
