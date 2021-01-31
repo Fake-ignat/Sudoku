@@ -118,34 +118,7 @@ class Widget(QtWidgets.QWidget):
         ex_string = f'def onBtn{x}Clicked(self): self.cells[self.idCellInFocus].setNewText("{x}")'
         exec(ex_string)
 
-    """
-    def onBtn0Clicked(self):
-        self.cells[self.idCellInFocus].setNewText("1")
 
-    def onBtn1Clicked(self):
-        self.cells[self.idCellInFocus].setNewText("2")
-
-    def onBtn2Clicked(self):
-        self.cells[self.idCellInFocus].setNewText("3")
-
-    def onBtn3Clicked(self):
-        self.cells[self.idCellInFocus].setNewText("4")
-
-    def onBtn4Clicked(self):
-        self.cells[self.idCellInFocus].setNewText("5")
-
-    def onBtn5Clicked(self):
-        self.cells[self.idCellInFocus].setNewText("6")
-
-    def onBtn6Clicked(self):
-        self.cells[self.idCellInFocus].setNewText("7")
-
-    def onBtn7Clicked(self):
-        self.cells[self.idCellInFocus].setNewText("8")
-
-    def onBtn8Clicked(self):
-        self.cells[self.idCellInFocus].setNewText("9")
-    """
 
     def onBtnXClicked(self):
         self.cells[self.idCellInFocus].setNewText("")
@@ -223,6 +196,33 @@ class Widget(QtWidgets.QWidget):
                     self.cells[id].setCellBlock()
                 self.cells[id].setText('' if data[i + 1] == '0' else data[i+1])
             self.onChangeCellFocus(0)
+
+    def print(self, printer):
+        penText = QtGui.QPen(QtGui.QColor(MyLabel.colorBlack), 1)
+        penBorder = QtGui.QPen(QtGui.QColor(QtCore.Qt.darkGray), 1)
+        brushOrange = QtGui.QBrush(QtGui.QColor(MyLabel.colorOrange))
+        brushGrey = QtGui.QBrush(QtGui.QColor(MyLabel.colorGrey))
+
+        painter = QtGui.QPainter()
+        painter.begin(printer)
+
+        painter.setFont(QtGui.QFont('Veranda', pointSize=14))
+        i = 0
+        for j in range(0, 9):
+            for k in range(0, 9):
+                x = j * 30
+                y = k * 30
+                target = self.cells[i]
+                painter.setPen(penBorder)
+                painter.setBrush(brushGrey if
+                                 target.bgColorDefault == MyLabel.colorGrey
+                                 else brushOrange)
+                painter.drawRect(x, y, 30, 30)
+                painter.setPen(penText)
+                painter.drawText(x, y, 30, 30, QtCore.Qt.AlignCenter,
+                                 target.text())
+                i += 1
+        painter.end()
 
 
 
