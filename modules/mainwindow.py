@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 import re
 from modules.widget import Widget
+from modules.previewdialog import Previewdialog
 
 qpushbutton_style = 'font-size:10pt; font-family:Verdana; color:black;font-weight:bold;'
 mylabel_style = 'font-size:14pt; font-family:Verdana; border:1px solid #9AA6A7;'
@@ -130,10 +131,31 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.onSave,
                 None,
                 "Сохранение головоломки в компактном формате"
+            ],
+            "print": [
+                "&Печать...",
+                self.onPrint,
+                QtCore.Qt.CTRL + QtCore.Qt.Key_P,
+                "Печать головоломки",
+                QtGui.QIcon('..\\images\\print.png')
+            ],
+            "preview": [
+                "П&редварительный просмотр...",
+                self.onPreview,
+                None,
+                "Печать головоломки",
+                QtGui.QIcon('..\\images\\preview.png')
+            ],
+            "page_setup": [
+                "П&араметры страницы...",
+                self.onPageSetup,
+                None,
+                "Задание параметров страницы",
             ]
         }
 
         myMenuFile = menuBar.addMenu("&Файл")
+
         action = add_menu_action(myMenuFile, *menu_actions["new"])
         toolBar.addAction(action)
 
@@ -145,6 +167,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
         add_menu_action(myMenuFile, *menu_actions["save_mini"])
 
+        action = add_menu_action(myMenuFile, *menu_actions["print"])
+        toolBar.addAction(action)
+
+        action = add_menu_action(myMenuFile, *menu_actions["preview"])
+        toolBar.addAction(action)
+
+        add_menu_action(myMenuFile, *menu_actions["page_setup"])
+
+        # ----------------------------------------------
         myMenuFile.addSeparator()
         toolBar.addSeparator()
 
@@ -160,10 +191,12 @@ class MainWindow(QtWidgets.QMainWindow):
         toolBar.addAction(action)
         add_menu_action(myMenuEdit, *menu_actions["paste_excel"])
 
+        # ----------------------------------------------
         myMenuEdit.addSeparator()
         toolBar.addSeparator()
 
         add_menu_action(myMenuEdit, *menu_actions["lock"])
+
         action = add_menu_action(myMenuEdit, *menu_actions["lock_all"])
         toolBar.addAction(action)
 
@@ -175,6 +208,7 @@ class MainWindow(QtWidgets.QMainWindow):
         add_menu_action(myMenuAbout, *menu_actions["about_program"])
         add_menu_action(myMenuAbout, *menu_actions["about_Qt"])
 
+        # ----------------------------------------------
         toolBar.setMovable(False)
         toolBar.setFloatable(False)
         self.addToolBar(toolBar)
@@ -286,9 +320,29 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.information(self, "Судоку",
                                                   "Не удалось сохранить файл")
 
+    def onPrint(self):
+        pd = QtPrintSupport.QPrintDialog(self.printer, parent=self)
+        pd.setOptions(QtPrintSupport.QAbstractPrintDialog.PrintToFile |
+                      QtPrintSupport.QAbstractPrintDialog.PrintSelection)
+        if pd.exec() == QtWidgets.QDialog.Accepted:
+            self.sudoku.print(self.printer)
+
+    def onPreview(self):
+        pd = Previewdialog(self)
+        pd.exec()
+
+    def onPageSetup(self):
+        pd = QtPrintSupport.QPageSetupDialog(self.printer, parent=self)
+        pd.exec()
+
+
+
 def add_menu_action(menu_item, title, listener, key, status_tip, icon=None):
     if icon:
-        action = menu_item.addAction(icon, title, listener, key)
+        if key:
+            action = menu_item.addAction(icon, title, listener, key)
+        else:
+            action = menu_item.addAction(icon, title, listener)
     else:
         if key:
             action = menu_item.addAction(title, listener, key)
@@ -297,3 +351,5 @@ def add_menu_action(menu_item, title, listener, key, status_tip, icon=None):
 
     action.setStatusTip(status_tip)
     return action
+
+
